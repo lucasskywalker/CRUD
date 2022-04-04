@@ -32,7 +32,7 @@
 </template>
 
 <script>
-import { ElMessageBox } from 'element-plus'
+import { ElMessageBox, ElMessage } from 'element-plus'
 
 import PostService from "@/api/PostService";
 
@@ -63,6 +63,7 @@ export default {
 
       this.posts = await PostService
           .getAll()
+          .catch(() => ElMessage.error('Oops, an error occurred while loading posts.'))
           .finally(() => this.isLoading = false)
     },
 
@@ -92,7 +93,8 @@ export default {
           cancelButtonText: 'Cancel',
           type: 'warning',
         }
-      ).then(() => {
+      )
+      .then(() => {
         this.onRemovePost(post)
       })
     },
@@ -102,11 +104,9 @@ export default {
 
       PostService
         .create(post)
-        .then((result) => {
-          this.isLoading = false
-
-          this.posts.push(result)
-        })
+        .then(result => this.posts.push(result))
+        .catch(() => ElMessage.error('Oops, an error occurred while creating post.'))
+        .finally(() => this.isLoading = false)
     },
     onUpdatePost(post) {
       const { id: updatePostId } = post
@@ -122,6 +122,7 @@ export default {
 
           this.closePostForm()
         })
+        .catch(() => ElMessage.error('Oops, an error occurred while updating post.'))
         .finally(() => this.isLoading = false)
     },
     onRemovePost(post) {
@@ -132,6 +133,7 @@ export default {
       PostService
           .remove(deletePostId)
           .then(() => this.posts = this.posts.filter(({ id }) => id !== deletePostId))
+          .catch(() => ElMessage.error('Oops, an error occurred while deleting post.'))
           .finally(() => this.isLoading = false)
     },
   }
